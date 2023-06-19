@@ -690,7 +690,7 @@ export type NavigatorScreenParams<
           };
     }[keyof ParamList];
 
-export type PathConfig<ParamList extends {}> = {
+export type PathConfig<ParamList = {}> = {
   path?: string;
   exact?: boolean;
   parse?: Record<string, (value: string) => any>;
@@ -699,10 +699,10 @@ export type PathConfig<ParamList extends {}> = {
   initialRouteName?: keyof ParamList;
 };
 
-export type PathConfigMap<ParamList extends {}> = {
-  [RouteName in keyof ParamList]?: NonNullable<
-    ParamList[RouteName]
-  > extends NavigatorScreenParams<infer T, any>
+export type PathConfigMap<ParamList = {}> = {
+  [RouteName in keyof ParamList]?: ParamList[RouteName] extends NavigatorScreenParams<
+    infer T
+  >
     ? string | PathConfig<T>
     : string | Omit<PathConfig<{}>, 'screens' | 'initialRouteName'>;
 };
