@@ -1,6 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from '@react-navigation/elements';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   DynamicColorIOS,
@@ -56,7 +60,9 @@ const Tabs = createBottomTabNavigator();
 
 export const UserInterfaceBug = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      theme={useColorScheme() === 'dark' ? DarkTheme : DefaultTheme}
+    >
       <Tabs.Navigator>
         <Tabs.Screen name="Stack" component={StackScreen} />
       </Tabs.Navigator>
