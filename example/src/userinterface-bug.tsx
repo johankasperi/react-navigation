@@ -8,6 +8,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   DynamicColorIOS,
+  Platform,
   ScrollView,
   useColorScheme,
   View,
@@ -22,14 +23,22 @@ const BlackWhiteScrollView = () => {
       <View style={{ paddingBottom: 20 }}>
         <Text>Current colorscheme: {useColorScheme()}</Text>
       </View>
-      <Text>View using DynamicColorIOS:</Text>
-      <View
-        style={{
-          height: 300,
-          width: 300,
-          backgroundColor: DynamicColorIOS({ dark: 'black', light: 'white' }),
-        }}
-      />
+      <View style={{ paddingBottom: 20 }}>
+        <Text>View using DynamicColorIOS:</Text>
+        <View
+          style={{
+            height: 300,
+            width: 300,
+            backgroundColor: DynamicColorIOS({ dark: 'black', light: 'white' }),
+          }}
+        />
+      </View>
+      <View style={{ height: 200, backgroundColor: 'black' }} />
+      <View style={{ height: 200, backgroundColor: 'white' }} />
+      <View style={{ height: 200, backgroundColor: 'black' }} />
+      <View style={{ height: 200, backgroundColor: 'white' }} />
+      <View style={{ height: 200, backgroundColor: 'black' }} />
+      <View style={{ height: 200, backgroundColor: 'white' }} />
     </ScrollView>
   );
 };
@@ -48,7 +57,10 @@ const StackScreen = () => {
             light: 'red',
             dark: 'green',
           }),
-          headerBlurEffect: 'regular',
+          headerBlurEffect:
+            Platform.OS === 'ios' && parseInt(Platform.Version, 10) < 26
+              ? 'regular'
+              : undefined,
           unstable_headerRightItems: () => [
             {
               type: 'button',
