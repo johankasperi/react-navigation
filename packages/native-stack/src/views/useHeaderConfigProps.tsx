@@ -26,8 +26,13 @@ import type {
   NativeStackHeaderItemMenuAction,
   NativeStackHeaderItemMenuSubmenu,
   NativeStackNavigationOptions,
+  NativeStackToolbarItem,
 } from '../types';
 import { processFonts } from './FontProcessor';
+
+// ToolbarItem is defined in react-native-screens but may not be released yet;
+// define it locally to keep this package self-contained.
+type ToolbarItem = HeaderBarButtonItem | { type: 'flexibleSpace' };
 
 type Props = NativeStackNavigationOptions & {
   headerTopInsetEnabled: boolean;
@@ -139,6 +144,95 @@ const processBarButtonItems = (
     .filter((item) => item != null);
 };
 
+const processToolbarItems = (
+  items: NativeStackToolbarItem[] | undefined,
+  colors: Theme['colors'],
+  fonts: Theme['fonts']
+): ToolbarItem[] | undefined => {
+  return items
+    ?.map((item, index) => {
+      if (item.type === 'flexibleSpace') {
+        return item;
+      }
+
+      if (item.type === 'spacing') {
+        if (item.spacing == null) {
+          throw new Error(
+            `Spacing item must have a 'spacing' property defined: ${JSON.stringify(item)}`
+          );
+        }
+        return item;
+      }
+
+      if (item.type === 'button' || item.type === 'menu') {
+        if (item.type === 'menu' && item.menu == null) {
+          throw new Error(
+            `Menu item must have a 'menu' property defined: ${JSON.stringify(item)}`
+          );
+        }
+
+        const { badge, label, labelStyle, icon, ...rest } = item;
+
+        let processedItem: HeaderBarButtonItem = {
+          ...rest,
+          index,
+          title: label,
+          titleStyle:
+            label != null || labelStyle != null
+              ? { ...fonts.regular, ...labelStyle }
+              : undefined,
+          icon:
+            icon?.type === 'image'
+              ? icon.tinted === false
+                ? { type: 'imageSource', imageSource: icon.source }
+                : { type: 'templateSource', templateSource: icon.source }
+              : icon,
+        };
+
+        if (processedItem.type === 'menu' && item.type === 'menu') {
+          const { multiselectable, layout } = item.menu;
+          processedItem = {
+            ...processedItem,
+            menu: {
+              ...processedItem.menu,
+              singleSelection: !multiselectable,
+              displayAsPalette: layout === 'palette',
+              items: item.menu.items.map(getMenuItem),
+            },
+          };
+        }
+
+        if (badge) {
+          const badgeBackgroundColor =
+            badge.style?.backgroundColor ?? colors.notification;
+          const badgeTextColor = color(badgeBackgroundColor).isLight()
+            ? 'black'
+            : 'white';
+          processedItem = {
+            ...processedItem,
+            badge: {
+              ...badge,
+              value: String(badge.value),
+              style: {
+                backgroundColor: badgeBackgroundColor,
+                color: badgeTextColor,
+                ...fonts.regular,
+                ...badge.style,
+              },
+            },
+          };
+        }
+
+        return processedItem;
+      }
+
+      throw new Error(
+        `Invalid toolbar item type: ${JSON.stringify(item)}. Valid types are 'button', 'menu', 'spacing' and 'flexibleSpace'.`
+      );
+    })
+    .filter((item) => item != null);
+};
+
 const getMenuItem = (
   item: NativeStackHeaderItemMenuAction | NativeStackHeaderItemMenuSubmenu
 ): HeaderBarButtonItemMenuAction | HeaderBarButtonItemSubmenu => {
@@ -196,6 +290,7 @@ export function useHeaderConfigProps({
   title,
   unstable_headerLeftItems: headerLeftItems,
   unstable_headerRightItems: headerRightItems,
+  unstable_toolbarItems: toolbarItemsProp,
 }: Props): ScreenStackHeaderConfigProps {
   const { direction } = useLocale();
   const { colors, fonts, dark } = useTheme();
@@ -353,6 +448,11 @@ export function useHeaderConfigProps({
     rightItems = [...rightItems].reverse();
   }
 
+  const toolbarItems = toolbarItemsProp?.({
+    tintColor,
+    canGoBack,
+  });
+
   const children = (
     <>
       {Platform.OS === 'ios' ? (
@@ -500,5 +600,7 @@ export function useHeaderConfigProps({
     headerLeftBarButtonItems: processBarButtonItems(leftItems, colors, fonts),
     headerRightBarButtonItems: processBarButtonItems(rightItems, colors, fonts),
     experimental_userInterfaceStyle: dark ? 'dark' : 'light',
+    // @ts-expect-error toolbarItems is not yet exported from the released react-native-screens
+    toolbarItems: processToolbarItems(toolbarItems, colors, fonts),
   } as const;
 }
