@@ -448,10 +448,7 @@ export function useHeaderConfigProps({
     rightItems = [...rightItems].reverse();
   }
 
-  const toolbarItems = toolbarItemsProp?.({
-    tintColor,
-    canGoBack,
-  });
+  const toolbarItems = toolbarItemsProp?.();
 
   const children = (
     <>
