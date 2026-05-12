@@ -146,7 +146,6 @@ const processBarButtonItems = (
 
 const processToolbarItems = (
   items: NativeStackToolbarItem[] | undefined,
-  colors: Theme['colors'],
   fonts: Theme['fonts']
 ): ToolbarItem[] | undefined => {
   return items
@@ -171,7 +170,7 @@ const processToolbarItems = (
           );
         }
 
-        const { badge, label, labelStyle, icon, ...rest } = item;
+        const { label, labelStyle, icon, ...rest } = item;
 
         let processedItem: HeaderBarButtonItem = {
           ...rest,
@@ -198,27 +197,6 @@ const processToolbarItems = (
               singleSelection: !multiselectable,
               displayAsPalette: layout === 'palette',
               items: item.menu.items.map(getMenuItem),
-            },
-          };
-        }
-
-        if (badge) {
-          const badgeBackgroundColor =
-            badge.style?.backgroundColor ?? colors.notification;
-          const badgeTextColor = color(badgeBackgroundColor).isLight()
-            ? 'black'
-            : 'white';
-          processedItem = {
-            ...processedItem,
-            badge: {
-              ...badge,
-              value: String(badge.value),
-              style: {
-                backgroundColor: badgeBackgroundColor,
-                color: badgeTextColor,
-                ...fonts.regular,
-                ...badge.style,
-              },
             },
           };
         }
@@ -598,6 +576,6 @@ export function useHeaderConfigProps({
     headerRightBarButtonItems: processBarButtonItems(rightItems, colors, fonts),
     experimental_userInterfaceStyle: dark ? 'dark' : 'light',
     // @ts-expect-error toolbarItems is not yet exported from the released react-native-screens
-    toolbarItems: processToolbarItems(toolbarItems, colors, fonts),
+    toolbarItems: processToolbarItems(toolbarItems, fonts),
   } as const;
 }

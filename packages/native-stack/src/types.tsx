@@ -1175,7 +1175,7 @@ export type NativeStackHeaderItem =
   | NativeStackHeaderItemSpacing
   | NativeStackHeaderItemCustom;
 
-type SharedToolbarItem = Omit<SharedHeaderItem, 'label'> & {
+type SharedToolbarItem = Omit<SharedHeaderItem, 'label' | 'badge'> & {
   /**
    * Label of the item. Optional for toolbar items since icon-only buttons are common.
    */
